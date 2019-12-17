@@ -1,6 +1,10 @@
 public enum MoveDirection {
     FORWARD,
-    BACKWARD,
+    FORWARD_RIGHT,
     RIGHT,
-    LEFT
+    BACK_RIGHT,
+    BACKWARD,
+    BACK_LEFT,
+    LEFT,
+    FORWARD_LEFT
 }

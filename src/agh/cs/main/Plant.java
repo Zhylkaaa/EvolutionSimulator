@@ -1,5 +1,10 @@
 public class Plant implements IMapElement {
     private Vector2d position;
+    private int nutritionalValue;
+
+    public int getNutritionalValue() {
+        return nutritionalValue;
+    }
 
     @Override
     public Vector2d getPosition() {

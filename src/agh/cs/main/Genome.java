@@ -1,14 +1,7 @@
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Random;
+import java.util.*;
 
 public class Genome {
-    private int size;
-
-    public int getSize() {
-        return size;
-    }
+    public static final int SIZE = 32;
 
     public List<Integer> getGenes() {
         return genes;
@@ -19,12 +12,11 @@ public class Genome {
 
     private static Comparator<Integer> comparator = Comparator.comparingInt(a -> a);
 
-    public Genome(int n){
-        this.size = n;
+    public Genome(){
         genes = new ArrayList<>();
 
-        for(int i = 0;i<this.size;i++){
-            genes.add(Genome.sampler.nextInt(4));
+        for(int i = 0;i<Genome.SIZE;i++){
+            genes.add(Genome.sampler.nextInt(8));
         }
 
         genes.sort(Genome.comparator);
@@ -34,28 +26,12 @@ public class Genome {
         Genome g1 = p1.getGenome();
         Genome g2 = p2.getGenome();
 
-        this.size = g1.getSize();
-
         this.genes = inheritGenesFromParents(g1, g2);
     }
 
-    private MapDirection intToDirection(int d){
-        switch (d){
-            case 0:
-                return MapDirection.NORTH;
-            case 1:
-                return MapDirection.EAST;
-            case 2:
-                return MapDirection.SOUTH;
-            case 3:
-                return MapDirection.WEST;
-            default:
-                return null;
-        }
-    }
-
-    public MapDirection chooseMove(){
-        return intToDirection(this.genes.get(Genome.sampler.nextInt(this.size)));
+    public MoveDirection chooseTurn() {
+        MoveDirection[] directions = MoveDirection.values();
+        return directions[genes.get(Genome.sampler.nextInt(Genome.SIZE))];
     }
 
     private List<Integer> inheritGenesFromParents(Genome genome1, Genome genome2){
@@ -63,19 +39,44 @@ public class Genome {
         List<Integer> g1 = genome1.getGenes();
         List<Integer> g2 = genome2.getGenes();
 
-        List<Integer> genes = new ArrayList<>(this.size);
-        int i = 0;
+        int p1 = Genome.sampler.nextInt(SIZE);
+        int p2 = Genome.sampler.nextInt(p1+1);
 
-        for(;i<this.size/2;i++){
-            genes.set(i, g1.get(Genome.sampler.nextInt(g1.size())));
+        List<Integer> resultingGenes = new ArrayList<>();
+
+        HashMap<Integer, Integer> count = new HashMap<>();
+
+        int i;
+
+        for(i = 0;i<8;i++){
+            count.put(i, 0);
+        }
+        for(i = 0; i <= p2; i++){
+            resultingGenes.add(g1.get(i));
+            count.put(g1.get(i), count.get(g1.get(i)) + 1);
+        }
+        for(;i<=p1; i++){
+            resultingGenes.add(g2.get(i));
+            count.put(g1.get(i), count.get(g1.get(i)) + 1);
+        }
+        for(;i<SIZE; i++){
+            resultingGenes.add(g1.get(i));
+            count.put(g1.get(i), count.get(g1.get(i)) + 1);
         }
 
-        for(;i<this.size;i++){
-            genes.set(i, g2.get(Genome.sampler.nextInt(g2.size())));
+        for(i = 0;i<8;i++){
+            if(count.get(i) == 0){
+                int pos = Genome.sampler.nextInt(SIZE);
+                while(count.get(resultingGenes.get(pos)) < 2){
+                    pos = Genome.sampler.nextInt(SIZE);
+                }
+                count.put(resultingGenes.get(pos), count.get(resultingGenes.get(pos)) - 1);
+                resultingGenes.set(pos, i);
+            }
         }
 
-        genes.sort(Genome.comparator);
+        resultingGenes.sort(Genome.comparator);
 
-        return genes;
+        return resultingGenes;
     }
 }

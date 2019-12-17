@@ -1,15 +1,39 @@
+/*
+    N
+  W   E
+    S
+ */
+
 public enum MapDirection {
+
     NORTH,
     SOUTH,
     WEST,
-    EAST;
+    EAST,
+    NORTH_EAST,
+    NORTH_WEST,
+    SOUTH_EAST,
+    SOUTH_WEST;
+
+    private Vector2d north = new Vector2d(0,1);
+    private Vector2d east = new Vector2d(1, 0);
+    private Vector2d west = new Vector2d(-1, 0);
+    private Vector2d south = new Vector2d(0, -1);
+    private Vector2d north_east = new Vector2d(1, 1);
+    private Vector2d north_west = new Vector2d(-1, 1);
+    private Vector2d south_east = new Vector2d(1, -1);
+    private Vector2d south_west = new Vector2d(-1, -1);
 
     public String toString() {
         switch (this) {
-            case NORTH: return "Północ";
-            case EAST: return "Wschód";
-            case SOUTH: return "Południe";
-            case WEST: return "Zachód";
+            case NORTH: return "N";
+            case EAST: return "E";
+            case SOUTH: return "S";
+            case WEST: return "W";
+            case NORTH_EAST: return "NE";
+            case NORTH_WEST: return "NW";
+            case SOUTH_EAST: return "SE";
+            case SOUTH_WEST: return "SW";
             default: return "unknown";
         }
     }
@@ -20,6 +44,16 @@ public enum MapDirection {
 
     public MapDirection previous(){
         return getMapDirection(WEST, NORTH, EAST, SOUTH);
+    }
+
+    public MapDirection turn(MoveDirection turn){
+        int intTurn = turn.ordinal();
+        int intDirection = this.ordinal();
+        MapDirection[] direction = MapDirection.values();
+
+        int intNextDirection = (intDirection + intTurn) % direction.length;
+
+        return direction[intNextDirection];
     }
 
     private MapDirection getMapDirection(MapDirection west, MapDirection north, MapDirection east, MapDirection south) {
@@ -34,10 +68,14 @@ public enum MapDirection {
 
     public Vector2d toUnitVector(){
         switch (this) {
-            case NORTH: return new Vector2d(0,1);
-            case EAST: return new Vector2d(1, 0);
-            case WEST: return new Vector2d(-1, 0);
-            case SOUTH: return new Vector2d(0, -1);
+            case NORTH: return north;
+            case EAST: return east;
+            case WEST: return west;
+            case SOUTH: return south;
+            case NORTH_EAST: return north_east;
+            case NORTH_WEST: return north_west;
+            case SOUTH_EAST: return south_east;
+            case SOUTH_WEST: return south_west;
             default: return null;
         }
     }
