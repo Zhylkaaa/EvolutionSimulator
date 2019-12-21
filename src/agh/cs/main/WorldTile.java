@@ -1,4 +1,6 @@
+import javafx.event.EventHandler;
 import javafx.geometry.Pos;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
@@ -25,7 +27,7 @@ public class WorldTile extends StackPane {
         border.setFill(color);
     }
 
-    public WorldTile(int x, int y, String value, Color color){
+    public WorldTile(int x, int y, String value, Color color, EventHandler<MouseEvent> handler){
         this.value = value;
         this.color = color;
 
@@ -43,6 +45,8 @@ public class WorldTile extends StackPane {
 
         setAlignment(Pos.CENTER);
         getChildren().addAll(border, text);
+
+        setOnMouseClicked(handler);
     }
 
     public Vector2d getPosition() {

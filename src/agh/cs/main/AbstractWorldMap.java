@@ -5,12 +5,22 @@ import java.util.*;
 
 public abstract class AbstractWorldMap implements IWorldMap, IPositionChangeObserver {
 
-    // TODO: extract information to class Ceil
+    public int getStepCost() {
+        return stepCost;
+    }
+
+    protected int stepCost;
 
     protected static Random sampler = new Random();
     protected LinkedList<Animal> animalList = new LinkedList<>();
     protected Map<Vector2d, LinkedList<Animal>> animals = new HashMap<>();
     protected Map<Vector2d, Plant> plants = new HashMap<>();
+
+    public Statistics getStatistic() {
+        return statistic;
+    }
+
+    private Statistics statistic = new Statistics();
 
     protected int width;
     protected int height;
@@ -122,6 +132,7 @@ public abstract class AbstractWorldMap implements IWorldMap, IPositionChangeObse
                 Animal animal = Animal.populate(parents.getKey(), parents.getValue());
 
                 if (animal != null) {
+                    statistic.notifyPopulation(parents.getKey(), parents.getValue(), animal);
                     animalsToAdd.add(animal);
                 }
             }
@@ -210,21 +221,47 @@ public abstract class AbstractWorldMap implements IWorldMap, IPositionChangeObse
         }
     }
 
-    public Pair<String, Color> getDrawElement(Vector2d position){
+    private Animal getMaximumEnergyAnimal(Vector2d position){
         LinkedList<Animal> animalsAtPosition = animals.get(position);
-        String toDisplay = "";
 
         if(animalsAtPosition != null && animalsAtPosition.size() > 0){
-            Animal animalToDisplay = animalsAtPosition.get(0);
+            Animal maximumEnergyAnimal = animalsAtPosition.get(0);
             for(Animal animal : animalsAtPosition){
-                animalToDisplay = animalToDisplay.getEnergy() >= animal.getEnergy() ? animalToDisplay : animal;
+                maximumEnergyAnimal = maximumEnergyAnimal.getEnergy() >= animal.getEnergy() ? maximumEnergyAnimal : animal;
             }
+            return maximumEnergyAnimal;
+        }
+
+        return null;
+    }
+
+    public Pair<String, Color> getDrawElement(Vector2d position){
+        String toDisplay = "";
+        Animal animalToDisplay = getMaximumEnergyAnimal(position);
+
+        if(animalToDisplay != null){
             toDisplay = animalToDisplay.toString();
         }
-        return new Pair<>(toDisplay, plants.get(position) != null ? Color.GREEN : Color.BLACK);
+
+        Color colorToDisplay = Color.BLACK;
+
+        if(plants.get(position) != null){
+            colorToDisplay = Color.GREEN;
+        }
+
+        if(animalToDisplay != null && animalToDisplay == statistic.getTrackedAnimal()){
+            colorToDisplay = Color.RED;
+        }
+
+
+        return new Pair<>(toDisplay, colorToDisplay);
     }
 
     public Genome getMostCommonGenome(){
         return Statistics.getMostCommonGene(animalList);
+    }
+
+    public Animal getAnimalToTrack(Vector2d position){
+        return getMaximumEnergyAnimal(position);
     }
 }

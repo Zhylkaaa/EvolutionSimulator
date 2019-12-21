@@ -32,9 +32,15 @@ public class World extends Application {
     private Text animalCount = new Text("");
     private Text plantCount = new Text("");
     private Text mostCommonGene = new Text("");
+    private Text days = new Text("Current day: 0");
+    private Text daysLived = new Text();
+    private Text descendantsCount = new Text();
+    private Text trackedEnergy = new Text();
 
-    private static int per_x = 30;
-    private static int per_y = 30;
+    private int dayCounter = 0;
+
+    private static int per_x = 20;
+    private static int per_y = 20;
 
     private static AbstractWorldMap map;
 
@@ -48,7 +54,7 @@ public class World extends Application {
         public void handle(long now) {
             if(now - lastTimer >= timediff){
                 boolean canRun = map.run();
-
+                dayCounter++;
                 update();
                 lastTimer = now;
                 if(!canRun){
@@ -59,7 +65,7 @@ public class World extends Application {
     };
 
     public static void main(String[] args) {
-        map = new ForestMap(per_x, per_y, 0.25f, 100, 6, 7);
+        map = new ForestMap(per_x, per_y, 0.25f, 30, 6, 10, 1);
 
         launch(args);
     }
@@ -69,6 +75,35 @@ public class World extends Application {
         primaryStage.setScene(new Scene(createContent()));
         primaryStage.show();
     }
+
+    EventHandler<MouseEvent> trackHandler = new EventHandler<MouseEvent>() {
+        @Override
+        public void handle(MouseEvent event) {
+            if(!isRuning){
+                WorldTile tile = ((WorldTile)event.getSource());
+                Animal animal = map.getAnimalToTrack( tile.getPosition() );
+
+                if(map.getStatistic().getTrackedAnimal() != null){
+                    Animal prevTracked = map.getStatistic().getTrackedAnimal();
+                    map.getStatistic().setTrackedAnimal(animal);
+
+                    Pair<String, Color> element = map.getDrawElement(prevTracked.getPosition());
+                    for(Node children : tilesPane.getChildren()){
+                        WorldTile t = (WorldTile) children;
+                        if(t.getPosition().equals(prevTracked.getPosition())){
+                            t.setColor(element.getValue());
+                            break;
+                        }
+                    }
+                } else {
+                    map.getStatistic().setTrackedAnimal(animal);
+                }
+
+                tile.setColor(Color.RED);
+                trackedEnergy.setText("Energy: " + animal.getEnergy());
+            }
+        }
+    };
 
     private Parent createContent() {
         WorldTile.TILE_X_SIZE = map_width / per_x;
@@ -82,7 +117,7 @@ public class World extends Application {
 
         for(int i = 0;i<per_x;i++){
             for(int j = 0;j<per_y;j++){
-                tiles.add(new WorldTile(i, j,"A", null));
+                tiles.add(new WorldTile(i, j,"A", null, trackHandler));
             }
         }
 
@@ -90,10 +125,16 @@ public class World extends Application {
 
         root.setCenter(tilesPane);
         Button startPauseButton = new Button("Start");
+        Text statisticTitle = new Text("Tracked Statistics:");
 
         animalCount.setFill(Color.WHITE);
         plantCount.setFill(Color.WHITE);
         mostCommonGene.setFill(Color.WHITE);
+        days.setFill(Color.WHITE);
+        daysLived.setFill(Color.WHITE);
+        descendantsCount.setFill(Color.WHITE);
+        trackedEnergy.setFill(Color.WHITE);
+        statisticTitle.setFill(Color.WHITE);
 
         startPauseButton.setOnMouseClicked(new EventHandler<MouseEvent>() {
             @Override
@@ -110,7 +151,7 @@ public class World extends Application {
             }
         });
 
-        leftPane.getChildren().addAll(startPauseButton, animalCount, plantCount, mostCommonGene);
+        leftPane.getChildren().addAll(startPauseButton, animalCount, plantCount, mostCommonGene, days, statisticTitle, daysLived, descendantsCount, trackedEnergy);
 
         //leftPane.setPrefSize(garbage_width, panes_height);
 
@@ -124,6 +165,7 @@ public class World extends Application {
 
     private void update(){
 
+        days.setText("Current day: " + Integer.toString(dayCounter));
         animalCount.setText("Animal count: " + Integer.toString(map.animalList.size()));
         plantCount.setText("Plant count: " + Integer.toString(map.plants.values().size()));
 
@@ -131,6 +173,18 @@ public class World extends Application {
         String genome = commonGene == null ? "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" : commonGene.toString();
 
         mostCommonGene.setText("Most common gene: \n"+genome);
+
+        Summary stats = map.getStatistic().getTrackedAnimalStatistics();
+
+        if(stats == null){
+            daysLived.setText("Not tracing any animal");
+            descendantsCount.setText("To start pause animation and click on animal");
+            trackedEnergy.setText("");
+        } else {
+            daysLived.setText("Day Lived: " + stats.getDaysLived());
+            descendantsCount.setText("Descendants Count: " + stats.getDescendantsCount());
+            trackedEnergy.setText("Energy: " + stats.getEnergy());
+        }
 
         for(Node children : tilesPane.getChildren()){
             WorldTile tile = (WorldTile) children;

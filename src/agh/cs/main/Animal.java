@@ -138,7 +138,7 @@ public class Animal implements IMapElement {
         this.position = nextPosition;
 
         positionChanged(oldPosition, nextPosition);
-        energy--;
+        energy-=map.getStepCost();
     }
 
     private void positionChanged(Vector2d oldPosition, Vector2d newPosition){

@@ -6,10 +6,10 @@ public class ForestMap extends AbstractWorldMap {
     private int plantsToGrowInForest;
     private int plantsToGrow;
 
-    public ForestMap(int width, int height, float forest_ratio, int startAnimalCount, int plantsToGrowInForest, int plantsToGrow){
+    public ForestMap(int width, int height, float forest_ratio, int startAnimalCount, int plantsToGrowInForest, int plantsToGrow, int stepCost){
         this.plantsToGrowInForest = plantsToGrowInForest;
         this.plantsToGrow = plantsToGrow;
-
+        this.stepCost = stepCost;
         this.width = width;
         this.height = height;
 
