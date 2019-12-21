@@ -1,3 +1,5 @@
+import com.sun.deploy.util.StringUtils;
+
 import java.util.*;
 
 public class Genome {
@@ -19,7 +21,46 @@ public class Genome {
             genes.add(Genome.sampler.nextInt(8));
         }
 
+
         genes.sort(Genome.comparator);
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 0;
+
+        for(int gen : this.genes){
+            hash = gen + 31*hash;
+        }
+
+        return hash;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if(!(obj instanceof Genome))return super.equals(obj);
+
+        boolean isEquals = true;
+
+        Genome other = (Genome) obj;
+
+        for(int i=0;i<genes.size(); i++){
+            if(!this.genes.get(i).equals(other.genes.get(i))){
+                isEquals = false;
+                break;
+            }
+        }
+        return isEquals;
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder result = new StringBuilder();
+
+        for(Integer i : genes){
+            result.append(i.toString());
+        }
+        return result.toString();
     }
 
     public Genome(Animal p1, Animal p2){
@@ -34,6 +75,21 @@ public class Genome {
         return directions[genes.get(Genome.sampler.nextInt(Genome.SIZE))];
     }
 
+    private List<Integer> validate(List<Integer> resultingGenes, Map<Integer, Integer> count){
+        for(int i = 0;i<8;i++){
+            if(count.get(i) == 0){
+                int pos = Genome.sampler.nextInt(SIZE);
+                while(count.get(resultingGenes.get(pos)) < 2){
+                    pos = Genome.sampler.nextInt(SIZE);
+                }
+                count.put(resultingGenes.get(pos), count.get(resultingGenes.get(pos)) - 1);
+                resultingGenes.set(pos, i);
+            }
+        }
+
+        return resultingGenes;
+    }
+
     private List<Integer> inheritGenesFromParents(Genome genome1, Genome genome2){
 
         List<Integer> g1 = genome1.getGenes();
@@ -42,9 +98,9 @@ public class Genome {
         int p1 = Genome.sampler.nextInt(SIZE);
         int p2 = Genome.sampler.nextInt(p1+1);
 
-        List<Integer> resultingGenes = new ArrayList<>();
-
         HashMap<Integer, Integer> count = new HashMap<>();
+
+        List<Integer> resultingGenes = new ArrayList<>();
 
         int i;
 
@@ -64,19 +120,9 @@ public class Genome {
             count.put(g1.get(i), count.get(g1.get(i)) + 1);
         }
 
-        for(i = 0;i<8;i++){
-            if(count.get(i) == 0){
-                int pos = Genome.sampler.nextInt(SIZE);
-                while(count.get(resultingGenes.get(pos)) < 2){
-                    pos = Genome.sampler.nextInt(SIZE);
-                }
-                count.put(resultingGenes.get(pos), count.get(resultingGenes.get(pos)) - 1);
-                resultingGenes.set(pos, i);
-            }
-        }
+        validate(resultingGenes, count);
 
         resultingGenes.sort(Genome.comparator);
-
         return resultingGenes;
     }
 }

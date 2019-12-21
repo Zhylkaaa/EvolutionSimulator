@@ -18,17 +18,20 @@ import java.util.List;
 
 public class World extends Application {
 
-    private static final int panes_width = 600;
-    private static final int panes_height = 600;
+    private static final int statistic_width = 300;
 
-    private static final int statistic_width = 100;
-    private static final int statistic_height = 100;
+    private static final int map_width = 600;
+    private static final int map_height = 600;
+
 
     private boolean isRuning = false;
 
     private BorderPane root = new BorderPane();
     private Pane tilesPane = new Pane();
     private VBox leftPane = new VBox(10);
+    private Text animalCount = new Text("");
+    private Text plantCount = new Text("");
+    private Text mostCommonGene = new Text("");
 
     private static int per_x = 30;
     private static int per_y = 30;
@@ -68,13 +71,13 @@ public class World extends Application {
     }
 
     private Parent createContent() {
-        WorldTile.TILE_X_SIZE = panes_width / per_x;
-        WorldTile.TILE_Y_SIZE = panes_height / per_y;
+        WorldTile.TILE_X_SIZE = map_width / per_x;
+        WorldTile.TILE_Y_SIZE = map_height / per_y;
 
         root.setPrefSize(per_x * WorldTile.TILE_X_SIZE + statistic_width, per_y * WorldTile.TILE_X_SIZE);
 
         root.setBackground(new Background(new BackgroundFill(Color.BLACK, CornerRadii.EMPTY, Insets.EMPTY)));
-
+        root.setPadding(new Insets(0, 10, 10, 10));
         List<WorldTile> tiles = new ArrayList<>();
 
         for(int i = 0;i<per_x;i++){
@@ -86,12 +89,11 @@ public class World extends Application {
         tilesPane.getChildren().addAll(tiles);
 
         root.setCenter(tilesPane);
-
         Button startPauseButton = new Button("Start");
 
-        Text animalCount = new Text("");
-
         animalCount.setFill(Color.WHITE);
+        plantCount.setFill(Color.WHITE);
+        mostCommonGene.setFill(Color.WHITE);
 
         startPauseButton.setOnMouseClicked(new EventHandler<MouseEvent>() {
             @Override
@@ -108,7 +110,7 @@ public class World extends Application {
             }
         });
 
-        leftPane.getChildren().addAll(startPauseButton, animalCount);
+        leftPane.getChildren().addAll(startPauseButton, animalCount, plantCount, mostCommonGene);
 
         //leftPane.setPrefSize(garbage_width, panes_height);
 
@@ -122,16 +124,13 @@ public class World extends Application {
 
     private void update(){
 
-        Text animalCount = null;
+        animalCount.setText("Animal count: " + Integer.toString(map.animalList.size()));
+        plantCount.setText("Plant count: " + Integer.toString(map.plants.values().size()));
 
-        for(Node node : leftPane.getChildren()){
-            if(node instanceof Text){
-                animalCount = (Text) node;
-                break;
-            }
-        }
+        Genome commonGene = map.getMostCommonGenome();
+        String genome = commonGene == null ? "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" : commonGene.toString();
 
-        animalCount.setText(Integer.toString(map.animalList.size()));
+        mostCommonGene.setText("Most common gene: \n"+genome);
 
         for(Node children : tilesPane.getChildren()){
             WorldTile tile = (WorldTile) children;

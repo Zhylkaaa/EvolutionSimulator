@@ -40,7 +40,7 @@ public class Animal implements IMapElement {
             hash = gen + 31*hash;
         }
 
-        return hash;
+        return genome.hashCode();
     }
 
     public Genome getGenome() {

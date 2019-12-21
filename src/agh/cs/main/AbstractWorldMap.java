@@ -223,4 +223,8 @@ public abstract class AbstractWorldMap implements IWorldMap, IPositionChangeObse
         }
         return new Pair<>(toDisplay, plants.get(position) != null ? Color.GREEN : Color.BLACK);
     }
+
+    public Genome getMostCommonGenome(){
+        return Statistics.getMostCommonGene(animalList);
+    }
 }
