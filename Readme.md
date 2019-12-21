@@ -13,3 +13,5 @@
 - `animal_max_energy` - maximum anergy animal can have
 - `animal_min_energy_to_populate` - minimum energy enimal need to populate
 - `animation_delay` - time between each frame (default: 100 ms)
+
+To start the program you should pass config filename as argument `Program arguments` if you use `IntelliJ`
