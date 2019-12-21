@@ -1,6 +1,10 @@
 import java.util.*;
 
 public class Animal implements IMapElement {
+    public static int getMaxEnergy() {
+        return MAX_ENERGY;
+    }
+
     private static final int MAX_ENERGY = 10;
     private static final int MIN_ENERGY_TO_POPULATE = 5;
 
@@ -50,18 +54,21 @@ public class Animal implements IMapElement {
 
 
     public Animal(AbstractWorldMap map){
-        energy = 3; //Animal.energy_sampler.nextInt(MAX_ENERGY + 1);
+        energy = Animal.sampler.nextInt(MAX_ENERGY - MIN_ENERGY_TO_POPULATE) + MIN_ENERGY_TO_POPULATE + 1;
         this.map = map;
         this.genome = new Genome();
         this.direction = MapDirection.NORTH;
 
         this.position = new Vector2d(Animal.sampler.nextInt(map.getWidth()), Animal.sampler.nextInt(map.getHeight()));
-
         this.map.place(this);
     }
 
     public void setEnergy(int energy) {
-        this.energy = energy;
+        if(energy > MAX_ENERGY){
+            this.energy = MAX_ENERGY;
+        } else {
+            this.energy = energy;
+        }
     }
 
     public AbstractWorldMap getMap() {
@@ -80,13 +87,11 @@ public class Animal implements IMapElement {
 
         this.position = new Vector2d(p1.getPosition().x + Animal.sampler.nextInt(3) - 1,
                 p1.getPosition().y + Animal.sampler.nextInt(3) - 1);
-
-        this.map.place(this);
     }
 
     @Override
     public String toString() {
-       return position.toString();
+       return this.direction.toString();
     }
 
     public void addObserver(IPositionChangeObserver observer){

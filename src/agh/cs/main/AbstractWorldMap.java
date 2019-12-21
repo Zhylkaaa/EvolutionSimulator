@@ -1,13 +1,17 @@
+import javafx.scene.paint.Color;
 import javafx.util.Pair;
 
 import java.util.*;
 
 public abstract class AbstractWorldMap implements IWorldMap, IPositionChangeObserver {
+
+    // TODO: extract information to class Ceil
+
     protected static Random sampler = new Random();
-    protected Map<Vector2d, HashSet<Animal>> animals = new HashMap<>();
+    protected LinkedList<Animal> animalList = new LinkedList<>();
+    protected Map<Vector2d, LinkedList<Animal>> animals = new HashMap<>();
     protected Map<Vector2d, Plant> plants = new HashMap<>();
 
-    private MapVisualizer visualizer = new MapVisualizer(this);
     protected int width;
     protected int height;
 
@@ -19,51 +23,60 @@ public abstract class AbstractWorldMap implements IWorldMap, IPositionChangeObse
         return height;
     }
 
-    private boolean move(){
+    private boolean move() {
         LinkedList<Animal> animalsToDelete = new LinkedList<>();
         boolean canMove = false;
 
-        for(HashSet<Animal> animalsAtPosition : animals.values()){
-            for(Animal animal : animalsAtPosition){
-                if(animal.isAlive()){
-                    animal.move();
-                    canMove = true;
-                } else {
-                    animalsToDelete.add(animal);
-                }
+        for (Animal animal : animalList) {
+            if (animal.isAlive()) {
+                animal.move();
+                canMove = true;
+            } else {
+                animalsToDelete.add(animal);
             }
         }
 
-        for(Animal animal : animalsToDelete){
+        for (Animal animal : animalsToDelete) {
             animals.get(animal.getPosition()).remove(animal);
+            animalList.remove(animal);
         }
 
         return canMove;
     }
 
-    private void feed(){
-        for(Map.Entry<Vector2d, Plant> position_plant : plants.entrySet()){
+    private void feed() {
+        LinkedList<Vector2d> plantsToRemove = new LinkedList<>();
+
+        for (Map.Entry<Vector2d, Plant> position_plant : plants.entrySet()) {
             Vector2d position = position_plant.getKey();
             Plant plant = position_plant.getValue();
 
-            if(animals.get(position).size() == 0) continue;
+            if (animals.get(position) == null || animals.get(position).size() == 0) continue;
 
             LinkedList<Animal> animalsToFeed = getAnimalsToFeedAtPosition(position);
+
+            if(animalsToFeed.size() > 0 && animalsToFeed.get(0).getEnergy() >= Animal.getMaxEnergy())continue;
 
             int receivedEnergy;
             int counter = 0;
 
-            if(plant.getNutritionalValue() < animalsToFeed.size()){
+            if (plant.getNutritionalValue() < animalsToFeed.size()) {
                 receivedEnergy = 1;
             } else {
                 receivedEnergy = plant.getNutritionalValue() / animalsToFeed.size();
             }
 
-            for(Animal animal : animalsToFeed){
+            plantsToRemove.add(position);
+
+            for (Animal animal : animalsToFeed) {
                 animal.feed(receivedEnergy);
                 counter += receivedEnergy;
-                if(counter >= plant.getNutritionalValue())break;
+                if (counter >= plant.getNutritionalValue()) break;
             }
+        }
+
+        for(Vector2d position : plantsToRemove){
+            plants.remove(position);
         }
     }
 
@@ -71,24 +84,26 @@ public abstract class AbstractWorldMap implements IWorldMap, IPositionChangeObse
 
         int maxEnergy = -1;
 
-        for(Animal animal : animals.get(position)){
+        if (animals.get(position) == null) return new LinkedList<>();
+
+        for (Animal animal : animals.get(position)) {
             maxEnergy = animal.getEnergy() > maxEnergy ? animal.getEnergy() : maxEnergy;
         }
 
         LinkedList<Animal> result = new LinkedList<>();
 
-        for(Animal animal : animals.get(position)){
-           if(animal.getEnergy() == maxEnergy) result.add(animal);
+        for (Animal animal : animals.get(position)) {
+            if (animal.getEnergy() == maxEnergy) result.add(animal);
         }
 
         return result;
     }
 
-    private void populate(){
+    private void populate() {
         List<Vector2d> positions = new LinkedList<>();
 
-        for(Map.Entry<Vector2d, HashSet<Animal>> position_animals : animals.entrySet()){
-            if(!position_animals.getValue().isEmpty()){
+        for (Map.Entry<Vector2d, LinkedList<Animal>> position_animals : animals.entrySet()) {
+            if (!position_animals.getValue().isEmpty()) {
                 positions.add(position_animals.getKey());
             }
         }
@@ -99,52 +114,53 @@ public abstract class AbstractWorldMap implements IWorldMap, IPositionChangeObse
     private void populateAtPositions(List<Vector2d> positions) {
         List<Animal> animalsToAdd = new LinkedList<>();
 
-        for(Vector2d position : positions){
-            HashSet<Animal> animals = this.animals.get(position);
+        for (Vector2d position : positions) {
+            LinkedList<Animal> animals = this.animals.get(position);
             Pair<Animal, Animal> parents = findAnimalsToPopulate(animals);
-            if(parents.getKey() != null && parents.getValue() != null) {
+            if (parents.getKey() != null && parents.getValue() != null) {
+
                 Animal animal = Animal.populate(parents.getKey(), parents.getValue());
 
-                if(animal != null){
+                if (animal != null) {
                     animalsToAdd.add(animal);
                 }
             }
         }
 
-        for(Animal animal : animalsToAdd){
-            addToAnimals(animal);
+        for (Animal animal : animalsToAdd) {
+            place(animal);
         }
     }
 
-    private Pair<Animal, Animal> findAnimalsToPopulate(HashSet<Animal> animals) {
+    private Pair<Animal, Animal> findAnimalsToPopulate(LinkedList<Animal> animals) {
         int firstEnergy = -1, secondEnergy = -1;
         Animal first = null, second = null;
 
-        for(Animal animal : animals){
-            if(animal.getEnergy() > firstEnergy){
+        for (Animal animal : animals) {
+            if (animal.getEnergy() > firstEnergy) {
                 secondEnergy = firstEnergy;
                 second = first;
                 first = animal;
                 firstEnergy = first.getEnergy();
-            } else if(animal.getEnergy() > secondEnergy){
+            } else if (animal.getEnergy() > secondEnergy) {
                 secondEnergy = animal.getEnergy();
                 second = animal;
-            } else if(animal.getEnergy() == firstEnergy){
-                if(secondEnergy == -1){
+            } else if (animal.getEnergy() == firstEnergy) {
+                if (secondEnergy == -1) {
                     second = animal;
                     secondEnergy = animal.getEnergy();
                 } else {
                     int p = AbstractWorldMap.sampler.nextInt(2);
-                    if(p == 1){
+                    if (p == 1) {
                         second = first;
                         secondEnergy = firstEnergy;
                         first = animal;
                         firstEnergy = animal.getEnergy();
                     }
                 }
-            } else if(animal.getEnergy() == secondEnergy){
+            } else if (animal.getEnergy() == secondEnergy) {
                 int p = AbstractWorldMap.sampler.nextInt(2);
-                if(p == 1){
+                if (p == 1) {
                     second = animal;
                     secondEnergy = animal.getEnergy();
                 }
@@ -160,7 +176,7 @@ public abstract class AbstractWorldMap implements IWorldMap, IPositionChangeObse
     public boolean run() {
         flourish();
         boolean canMove = move();
-        if(canMove) {
+        if (canMove) {
             feed();
             populate(); //fuck();
         } else {
@@ -173,6 +189,7 @@ public abstract class AbstractWorldMap implements IWorldMap, IPositionChangeObse
     @Override
     public boolean place(Animal animal) {
 
+        animalList.add(animal);
         addToAnimals(animal);
         animal.addObserver(this);
 
@@ -186,20 +203,24 @@ public abstract class AbstractWorldMap implements IWorldMap, IPositionChangeObse
     }
 
     private void addToAnimals(Animal animal) {
-        if(animals.get(animal.getPosition()) != null){
+        if (animals.get(animal.getPosition()) != null) {
             animals.get(animal.getPosition()).add(animal);
         } else {
-            animals.put(animal.getPosition(), new HashSet<>(Collections.singletonList(animal)));
+            animals.put(animal.getPosition(), new LinkedList<>(Collections.singletonList(animal)));
         }
     }
 
-    @Override
-    public Object[] objectsAt(Vector2d position) {
-        return animals.get(position).toArray();
-    }
+    public Pair<String, Color> getDrawElement(Vector2d position){
+        LinkedList<Animal> animalsAtPosition = animals.get(position);
+        String toDisplay = "";
 
-    @Override
-    public String toString() {
-        return visualizer.draw(new Vector2d(0, 0), new Vector2d(this.width, this.height));
+        if(animalsAtPosition != null && animalsAtPosition.size() > 0){
+            Animal animalToDisplay = animalsAtPosition.get(0);
+            for(Animal animal : animalsAtPosition){
+                animalToDisplay = animalToDisplay.getEnergy() >= animal.getEnergy() ? animalToDisplay : animal;
+            }
+            toDisplay = animalToDisplay.toString();
+        }
+        return new Pair<>(toDisplay, plants.get(position) != null ? Color.GREEN : Color.BLACK);
     }
 }

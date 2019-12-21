@@ -1,4 +1,7 @@
 public class Plant implements IMapElement {
+
+    private static final int MAX_NUTRITIONAL_VALUE = 10;
+
     private Vector2d position;
     private int nutritionalValue;
 
@@ -13,10 +16,11 @@ public class Plant implements IMapElement {
 
     public Plant(Vector2d position){
         this.position = position;
+        this.nutritionalValue = AbstractWorldMap.sampler.nextInt(MAX_NUTRITIONAL_VALUE) + 1;
     }
 
     @Override
     public String toString() {
-        return "R";
+        return "P";
     }
 }
