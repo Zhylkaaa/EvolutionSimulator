@@ -1,0 +1,13 @@
+{
+  "width_in_tiles" : 12,
+  "height_in_tiles" : 12,
+  "forest_ratio" : 0.25, // must be from [0, 0.5)
+  "animal_start_count" : 30,
+  "plants_to_grow_in_forest" : 2,
+  "plants_to_grow" : 3,
+  "step_cost" : 1,
+  "max_nutrition_value" : 10,
+  "animal_max_energy" : 10,
+  "animal_min_energy_to_populate" : 5,
+  "animation_delay" : "100000000"
+}

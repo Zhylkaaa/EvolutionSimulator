@@ -5,8 +5,8 @@ public class Animal implements IMapElement {
         return MAX_ENERGY;
     }
 
-    private static final int MAX_ENERGY = 10;
-    private static final int MIN_ENERGY_TO_POPULATE = 5;
+    public static int MAX_ENERGY = 10;
+    public static int MIN_ENERGY_TO_POPULATE = 5;
 
     private static Random sampler = new Random();
     private List<IPositionChangeObserver> observers = new LinkedList<>();

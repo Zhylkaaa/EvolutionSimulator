@@ -1,3 +1,4 @@
+import com.google.gson.Gson;
 import javafx.animation.AnimationTimer;
 import javafx.application.Application;
 import javafx.event.EventHandler;
@@ -13,8 +14,14 @@ import javafx.scene.text.Text;
 import javafx.stage.Stage;
 import javafx.util.Pair;
 
+import java.io.BufferedReader;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.List;
+
+import static java.lang.System.exit;
 
 public class World extends Application {
 
@@ -44,7 +51,7 @@ public class World extends Application {
 
     private static AbstractWorldMap map;
 
-    private static long timediff = 100000000L;
+    private static long timediff = Long.parseLong("100000000");
 
     private AnimationTimer timer = new AnimationTimer() {
 
@@ -64,8 +71,40 @@ public class World extends Application {
         }
     };
 
+    private static void setupMapParameters(String filename){
+        BufferedReader reader = null;
+        try {
+            reader = new BufferedReader(new FileReader(filename));
+        } catch (FileNotFoundException e) {
+            System.out.println("Shit happened, no file found!");
+            exit(1);
+        }
+
+        Gson gson = new Gson();
+        StartParameters parameters = gson.fromJson(reader, StartParameters.class);
+
+        map = new ForestMap(parameters.getWidth_in_tiles(),
+                parameters.getHeight_in_tiles(),
+                parameters.getForest_ratio(),
+                parameters.getAnimal_start_count(),
+                parameters.getPlants_to_grow_in_forest(),
+                parameters.getPlants_to_grow(),
+                parameters.getStep_cost());
+
+        per_x = parameters.getWidth_in_tiles();
+        per_y = parameters.getHeight_in_tiles();
+
+        Animal.MAX_ENERGY = parameters.getAnimal_max_energy();
+        Animal.MIN_ENERGY_TO_POPULATE = parameters.getAnimal_min_energy_to_populate();
+
+        Plant.MAX_NUTRITIONAL_VALUE = parameters.getMax_nutrition_value();
+
+        timediff = Long.parseLong(parameters.getAnimation_delay());
+    }
+
     public static void main(String[] args) {
-        map = new ForestMap(per_x, per_y, 0.25f, 30, 6, 10, 1);
+        //map = new ForestMap(per_x, per_y, 0.25f, 30, 6, 10, 1);
+        setupMapParameters(args[0]);
 
         launch(args);
     }
@@ -82,6 +121,7 @@ public class World extends Application {
             if(!isRuning){
                 WorldTile tile = ((WorldTile)event.getSource());
                 Animal animal = map.getAnimalToTrack( tile.getPosition() );
+                if(animal == null)return;
 
                 if(map.getStatistic().getTrackedAnimal() != null){
                     Animal prevTracked = map.getStatistic().getTrackedAnimal();

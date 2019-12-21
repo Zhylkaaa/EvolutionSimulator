@@ -1,6 +1,6 @@
 public class Plant implements IMapElement {
 
-    private static final int MAX_NUTRITIONAL_VALUE = 10;
+    public static int MAX_NUTRITIONAL_VALUE = 10;
 
     private Vector2d position;
     private int nutritionalValue;
