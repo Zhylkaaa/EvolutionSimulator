@@ -4,11 +4,11 @@ public class ForestMap extends AbstractWorldMap {
     private static int MAX_SAMPLES = 100;
 
     private int plantsToGrowInForest;
-    private int plantsToGrow;
+    private int plantsToGrowInSteppe;
 
-    public ForestMap(int width, int height, float forest_ratio, int startAnimalCount, int plantsToGrowInForest, int plantsToGrow, int stepCost){
+    public ForestMap(int width, int height, float forest_ratio, int startAnimalCount, int plantsToGrowInForest, int plantsToGrowInSteppe, int stepCost){
         this.plantsToGrowInForest = plantsToGrowInForest;
-        this.plantsToGrow = plantsToGrow;
+        this.plantsToGrowInSteppe = plantsToGrowInSteppe;
         this.stepCost = stepCost;
         this.width = width;
         this.height = height;
@@ -43,7 +43,7 @@ public class ForestMap extends AbstractWorldMap {
     @Override
     protected void flourish() {
         for(int i = 0;i<plantsToGrowInForest;i++)plantInForest();
-        for(int i = 0;i<plantsToGrow - plantsToGrowInForest; i++)plantInSteppe();
+        for(int i = 0;i<plantsToGrowInSteppe; i++)plantInSteppe();
     }
 
     private void plantInSteppe() {

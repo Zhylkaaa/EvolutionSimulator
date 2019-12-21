@@ -88,7 +88,7 @@ public class World extends Application {
                 parameters.getForest_ratio(),
                 parameters.getAnimal_start_count(),
                 parameters.getPlants_to_grow_in_forest(),
-                parameters.getPlants_to_grow(),
+                parameters.getPlants_to_grow_in_steppe(),
                 parameters.getStep_cost());
 
         per_x = parameters.getWidth_in_tiles();

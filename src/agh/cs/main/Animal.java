@@ -148,6 +148,6 @@ public class Animal implements IMapElement {
     }
 
     public void feed(int nutritionalValue){
-        this.energy += nutritionalValue;
+        setEnergy(this.energy + nutritionalValue);
     }
 }

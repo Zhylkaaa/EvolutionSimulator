@@ -4,7 +4,7 @@ public class StartParameters {
     private float forest_ratio;
     private int animal_start_count;
     private int plants_to_grow_in_forest;
-    private int plants_to_grow;
+    private int plants_to_grow_in_steppe;
     private int step_cost;
     private int max_nutrition_value;
     private int animal_max_energy;
@@ -31,8 +31,8 @@ public class StartParameters {
         return plants_to_grow_in_forest;
     }
 
-    public int getPlants_to_grow() {
-        return plants_to_grow;
+    public int getPlants_to_grow_in_steppe() {
+        return plants_to_grow_in_steppe;
     }
 
     public int getStep_cost() {
